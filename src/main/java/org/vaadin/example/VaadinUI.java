@@ -44,7 +44,7 @@ public class VaadinUI extends UI implements ClickListener, Window.CloseListener 
             "###V-Leaflet example\n\n"
             + "This is small example app to demonstrate how to add simple GIS "
             + "features to your Vaadin apps. "
-            + "[Check out the sources!](https://github.com/mstahv/vleafletexample)");
+            + "[Check out the sources!](https://github.com/mstahv/spring-boot-spatial-example)");
     private MTable<SpatialEvent> table;
     private Button addNew = new Button("Add event", this);
     private LMap map = new LMap();
