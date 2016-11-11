@@ -74,7 +74,14 @@
         <dependency>
             <groupId>org.vaadin.addon</groupId>
             <artifactId>v-leaflet-editable</artifactId>
-            <version>1.0.0</version>
+            <version>1.0.1</version>
+            <type>jar</type>
+        </dependency>
+        <!-- Override v-leaflet version dragged in by editable -->
+        <dependency>
+            <groupId>org.vaadin.addon</groupId>
+            <artifactId>v-leaflet</artifactId>
+            <version>1.0.3</version>
             <type>jar</type>
         </dependency>
     </dependencies>
