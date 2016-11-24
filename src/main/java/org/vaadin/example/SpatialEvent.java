@@ -18,10 +18,12 @@ public class SpatialEvent extends AbstractEntity {
     @Temporal(TemporalType.DATE)
     private Date date;
 
-    @Column(columnDefinition = "POINT")
+    //@Column(columnDefinition = "POINT") // this type is known by MySQL
+    @Column(columnDefinition = "geometry")
     private Point location;
 
-    @Column(columnDefinition = "POLYGON")
+    // @Column(columnDefinition = "POLYGON") // this type is known by MySQL
+    @Column(columnDefinition = "geometry")
     private LineString route;
 
     public SpatialEvent() {
