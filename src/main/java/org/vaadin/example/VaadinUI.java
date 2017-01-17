@@ -1,6 +1,26 @@
-
 package org.vaadin.example;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.vaadin.addon.leaflet.AbstractLeafletLayer;
+import org.vaadin.addon.leaflet.LMap;
+import org.vaadin.addon.leaflet.LOpenStreetMapLayer;
+import org.vaadin.addon.leaflet.LTileLayer;
+import org.vaadin.addon.leaflet.shared.Bounds;
+import org.vaadin.addon.leaflet.shared.Point;
+import org.vaadin.addon.leaflet.util.JTSUtil;
+import org.vaadin.example.FilterPanel.FilterPanelObserver;
+import org.vaadin.viritin.button.MButton;
+import org.vaadin.viritin.fields.MTable;
+import org.vaadin.viritin.label.RichText;
+import org.vaadin.viritin.layouts.MHorizontalLayout;
+import org.vaadin.viritin.layouts.MVerticalLayout;
+
+import com.querydsl.core.types.Predicate;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.vaadin.addon.contextmenu.ContextMenu;
 import com.vaadin.annotations.Theme;
 import com.vaadin.server.FontAwesome;
@@ -10,25 +30,17 @@ import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickListener;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.Window;
-import java.util.List;
-import org.vaadin.addon.leaflet.AbstractLeafletLayer;
-import org.vaadin.addon.leaflet.LMap;
-import org.vaadin.addon.leaflet.LOpenStreetMapLayer;
-import org.vaadin.addon.leaflet.LTileLayer;
-import org.vaadin.addon.leaflet.shared.Point;
-import org.vaadin.addon.leaflet.util.JTSUtil;
-import org.vaadin.viritin.button.MButton;
-import org.vaadin.viritin.fields.MTable;
-import org.vaadin.viritin.label.RichText;
-import org.vaadin.viritin.layouts.MHorizontalLayout;
-import org.vaadin.viritin.layouts.MVerticalLayout;
+import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.geom.LinearRing;
+import com.vividsolutions.jts.geom.Polygon;
 
 /**
  * @author mstahv
  */
 @Theme("valo")
 @SpringUI
-public class VaadinUI extends UI implements ClickListener, Window.CloseListener {
+public class VaadinUI extends UI implements ClickListener, Window.CloseListener, FilterPanelObserver {
     
     SpatialEventRepository repo;
 
@@ -52,9 +64,11 @@ public class VaadinUI extends UI implements ClickListener, Window.CloseListener 
     
     private EventEditor editor = new EventEditor();
 
+	private FilterPanel filterPanel = new FilterPanel();
     @Override
     protected void init(VaadinRequest request) {
 
+		filterPanel.setObserver(this);
         table = new MTable<>(SpatialEvent.class);
         table.setWidth("100%");
 
@@ -64,17 +78,18 @@ public class VaadinUI extends UI implements ClickListener, Window.CloseListener 
             });
             Button delete = new MButton(FontAwesome.TRASH, e -> {
                 repo.delete(spatialEvent);
-                loadEvents();
+				loadEvents(filterPanel.isOnlyOnMap(), filterPanel.getTitle());
             });
             return new MHorizontalLayout(edit, delete);
         });
         table.withProperties("id", "title", "date", "Actions");
 
-        loadEvents();
+		loadEvents(filterPanel.isOnlyOnMap(), filterPanel.getTitle());
 
         osmTiles.setAttributionString("© OpenStreetMap Contributors");
 
-        setContent(new MVerticalLayout(infoText, new MHorizontalLayout(addNew)).expand(map, table));
+		setContent(new MVerticalLayout(infoText, new MHorizontalLayout(addNew)).expand(map).add(filterPanel)
+				.expand(table));
 
         // You can also use ContextMenu Add-on with Leaflemap 
         // Give "false" as a second parameter -> disables automatic opening of the menu.
@@ -94,10 +109,16 @@ public class VaadinUI extends UI implements ClickListener, Window.CloseListener 
             contextMenu.open((int) event.getClientX(), (int) event.getClientY());
         });
         
+		map.addMoveEndListener(event -> {
+			if (filterPanel.isOnlyOnMap()) {
+				onFilterChange();
+			}
+		});
+
         editor.setSavedHandler(spatialEvent -> {
             repo.save(spatialEvent);
             editor.closePopup();
-            loadEvents();
+			loadEvents(filterPanel.isOnlyOnMap(), filterPanel.getTitle());
         });
 
     }
@@ -107,9 +128,15 @@ public class VaadinUI extends UI implements ClickListener, Window.CloseListener 
         editor.openInModalPopup();
     }
 
-    private void loadEvents() {
-
-        List<SpatialEvent> events = repo.findAll();
+	private void loadEvents(boolean onlyInViewport, String titleContains) {
+		Predicate predicate = createPredicate(onlyInViewport, titleContains);
+		List<SpatialEvent> events = null;
+		if (predicate != null) {
+			events = new ArrayList<>();
+			CollectionUtils.addAll(events, repo.findAll(predicate).iterator());
+		} else {
+			events = repo.findAll();
+		}
 
         /* Populate table... */
         table.setRows(events);
@@ -121,8 +148,46 @@ public class VaadinUI extends UI implements ClickListener, Window.CloseListener 
             addEventVector(spatialEvent.getLocation(), spatialEvent);
             addEventVector(spatialEvent.getRoute(), spatialEvent);
         }
-        map.zoomToContent();
+		if (!filterPanel.isOnlyOnMap()) {
+			map.zoomToContent();
+		}
     }
+
+	private Predicate createPredicate(boolean onlyInViewport, String titleContains) {
+		QSpatialEvent qspatialEvent = QSpatialEvent.spatialEvent;
+		BooleanExpression intersection = null;
+		BooleanExpression predicate = null;
+		if (onlyInViewport) {
+			Polygon polygon = toPolygon(map.getBounds());
+			intersection = qspatialEvent.location.intersects(polygon);
+		}
+		BooleanExpression title = null;
+		if (StringUtils.isNotBlank(titleContains)) {
+			title = qspatialEvent.title.containsIgnoreCase(titleContains);
+		}
+		if (intersection != null && title != null) {
+			predicate = title.and(intersection);
+		} else if (intersection != null) {
+			predicate = intersection;
+		} else if (title != null) {
+			predicate = title;
+		}
+		return predicate;
+	}
+
+	private Polygon toPolygon(Bounds bounds) {
+		GeometryFactory factory = new GeometryFactory();
+		double north = bounds.getNorthEastLat();
+		double south = bounds.getSouthWestLat();
+		double west = bounds.getSouthWestLon();
+		double east = bounds.getNorthEastLon();
+		Coordinate[] coords = new Coordinate[] { new Coordinate(east, north), new Coordinate(east, south),
+				new Coordinate(west, south), new Coordinate(west, north), new Coordinate(east, north) };
+		// GeoDb does not support LinerRing intersection, but polygon ?!
+		LinearRing lr = factory.createLinearRing(coords);
+		Polygon polygon = factory.createPolygon(lr, null);
+		return polygon;
+	}
 
     private void addEventVector(final com.vividsolutions.jts.geom.Geometry g, final SpatialEvent spatialEvent) {
         if (g != null) {
@@ -162,7 +227,12 @@ public class VaadinUI extends UI implements ClickListener, Window.CloseListener 
     @Override
     public void windowClose(Window.CloseEvent e) {
         // refresh table after edit
-        loadEvents();
+		loadEvents(filterPanel.isOnlyOnMap(), filterPanel.getTitle());
     }
+
+	@Override
+	public void onFilterChange() {
+		loadEvents(filterPanel.isOnlyOnMap(), filterPanel.getTitle());
+	}
 
 }
