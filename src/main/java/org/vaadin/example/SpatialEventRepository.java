@@ -1,8 +1,6 @@
 
 package org.vaadin.example;
 
-import java.util.List;
-
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.querydsl.QueryDslPredicateExecutor;
 
@@ -11,5 +9,4 @@ import org.springframework.data.querydsl.QueryDslPredicateExecutor;
  */
 public interface SpatialEventRepository
 		extends JpaRepository<SpatialEvent, Long>, QueryDslPredicateExecutor<SpatialEvent> {
-	public List<SpatialEvent> findByTitleIgnoreCaseContaining(String title);
 }
