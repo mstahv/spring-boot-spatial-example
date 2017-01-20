@@ -1,9 +1,7 @@
 package org.vaadin.example;
 
-import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.vaadin.addon.leaflet.AbstractLeafletLayer;
 import org.vaadin.addon.leaflet.LMap;
@@ -132,8 +130,7 @@ public class VaadinUI extends UI implements ClickListener, Window.CloseListener,
 		Predicate predicate = createPredicate(onlyInViewport, titleContains);
 		List<SpatialEvent> events = null;
 		if (predicate != null) {
-			events = new ArrayList<>();
-			CollectionUtils.addAll(events, repo.findAll(predicate).iterator());
+			events = repo.findAll(predicate);
 		} else {
 			events = repo.findAll();
 		}
