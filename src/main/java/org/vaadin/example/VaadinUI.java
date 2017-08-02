@@ -12,15 +12,15 @@ import org.vaadin.addon.leaflet.shared.Point;
 import org.vaadin.addon.leaflet.util.JTSUtil;
 import org.vaadin.example.FilterPanel.FilterPanelObserver;
 import org.vaadin.viritin.button.MButton;
-import org.vaadin.viritin.fields.MTable;
+import org.vaadin.viritin.grid.MGrid;
 import org.vaadin.viritin.label.RichText;
 import org.vaadin.viritin.layouts.MHorizontalLayout;
 import org.vaadin.viritin.layouts.MVerticalLayout;
 
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.BooleanExpression;
-import com.vaadin.addon.contextmenu.ContextMenu;
 import com.vaadin.annotations.Theme;
+import com.vaadin.contextmenu.ContextMenu;
 import com.vaadin.server.FontAwesome;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.spring.annotation.SpringUI;
@@ -55,32 +55,34 @@ public class VaadinUI extends UI implements ClickListener, Window.CloseListener,
             + "This is small example app to demonstrate how to add simple GIS "
             + "features to your Vaadin apps. "
             + "[Check out the sources!](https://github.com/mstahv/spring-boot-spatial-example)");
-    private MTable<SpatialEvent> table;
+    private MGrid<SpatialEvent> table;
     private Button addNew = new Button("Add event", this);
     private LMap map = new LMap();
     private LTileLayer osmTiles = new LOpenStreetMapLayer();
     
-    private EventEditor editor = new EventEditor();
+	private EventEditor editor = new EventEditor(SpatialEvent.class);
 
 	private FilterPanel filterPanel = new FilterPanel();
     @Override
     protected void init(VaadinRequest request) {
 
 		filterPanel.setObserver(this);
-        table = new MTable<>(SpatialEvent.class);
+        table = new MGrid<>(SpatialEvent.class);
         table.setWidth("100%");
 
-        table.withGeneratedColumn("Actions", spatialEvent -> {
-            Button edit = new MButton(FontAwesome.EDIT, e -> {
-                editInPopup(spatialEvent);
-            });
-            Button delete = new MButton(FontAwesome.TRASH, e -> {
-                repo.delete(spatialEvent);
+		table.addComponentColumn(spatialEvent -> {
+			Button edit = new MButton(FontAwesome.EDIT, e -> {
+				editInPopup(spatialEvent);
+			});
+			Button delete = new MButton(FontAwesome.TRASH, e -> {
+				repo.delete(spatialEvent);
 				loadEvents(filterPanel.isOnlyOnMap(), filterPanel.getTitle());
-            });
-            return new MHorizontalLayout(edit, delete);
+			});
+			return new MHorizontalLayout(edit, delete);
         });
-        table.withProperties("id", "title", "date", "Actions");
+        
+       
+		table.withProperties("id", "title", "date");
 
 		loadEvents(filterPanel.isOnlyOnMap(), filterPanel.getTitle());
 

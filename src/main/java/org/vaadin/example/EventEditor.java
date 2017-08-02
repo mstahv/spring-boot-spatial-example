@@ -1,20 +1,23 @@
 package org.vaadin.example;
 
-import org.vaadin.addon.leaflet.util.PointField;
-
-import com.vaadin.data.fieldgroup.BeanFieldGroup;
-import com.vaadin.ui.Component;
-import com.vaadin.ui.DateField;
-import com.vaadin.ui.TextField;
-import com.vaadin.ui.Window;
 import org.vaadin.addon.leaflet.editable.LineStringField;
+import org.vaadin.addon.leaflet.util.PointField;
 import org.vaadin.viritin.fields.MTextField;
 import org.vaadin.viritin.form.AbstractForm;
 import org.vaadin.viritin.layouts.MVerticalLayout;
 
+import com.vaadin.ui.Component;
+import com.vaadin.ui.DateField;
+import com.vaadin.ui.TextField;
+import com.vaadin.ui.Window;
+
 public class EventEditor extends AbstractForm<SpatialEvent> {
 
-    private TextField title = new MTextField("Title");
+	public EventEditor(Class<SpatialEvent> entityType) {
+		super(entityType);
+	}
+
+	private TextField title = new MTextField("Title");
     private DateField date = new DateField("Date");
     private PointField location = new PointField("Location");
     private LineStringField route = new LineStringField("Route");

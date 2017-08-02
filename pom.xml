@@ -18,8 +18,8 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <java.version>1.8</java.version>
-        <hibernate.version>5.2.4.Final</hibernate.version>
-        <vaadin.version>7.7.6</vaadin.version>
+        <!-- <hibernate.version>5.2.4.Final</hibernate.version>-->
+        <vaadin.version>8.1.0</vaadin.version>
         <vaadin.widgetset.mode>local</vaadin.widgetset.mode>
     </properties>
     <dependencies>
@@ -41,7 +41,6 @@
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>vaadin-spring-boot-starter</artifactId>
-            <version>1.1.1</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -80,25 +79,23 @@
         <dependency>
             <groupId>org.vaadin</groupId>
             <artifactId>viritin</artifactId>
-            <version>1.59</version>
-            <type>jar</type>
+            <version>2.0-SNAPSHOT</version>
         </dependency>
         <dependency>
-            <groupId>com.vaadin.addon</groupId>
+            <groupId>com.vaadin</groupId>
             <artifactId>vaadin-context-menu</artifactId>
-            <version>0.7.4</version>
         </dependency>
         <dependency>
             <groupId>org.vaadin.addon</groupId>
             <artifactId>v-leaflet-editable</artifactId>
-            <version>1.0.1</version>
+            <version>2.0.0-SNAPSHOT</version>
             <type>jar</type>
         </dependency>
         <!-- Override v-leaflet version dragged in by editable -->
         <dependency>
             <groupId>org.vaadin.addon</groupId>
             <artifactId>v-leaflet</artifactId>
-            <version>1.0.3</version>
+            <version>2.0.0</version>
             <type>jar</type>
         </dependency>
         <dependency>
