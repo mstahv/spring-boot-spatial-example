@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.vaadin</groupId>
     <artifactId>spatial-spring-boot-app</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>0.0.2-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>spatial-spring-boot-app</name>
     <description>Demo project for Spring Boot, Hibernate Spatial extensions, Vaadin and V-Leaflet</description>
