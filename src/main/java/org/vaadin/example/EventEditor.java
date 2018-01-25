@@ -1,8 +1,8 @@
 package org.vaadin.example;
 
+import com.vaadin.data.converter.LocalDateToDateConverter;
 import org.vaadin.addon.leaflet.util.PointField;
 
-import com.vaadin.data.fieldgroup.BeanFieldGroup;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.DateField;
 import com.vaadin.ui.TextField;
@@ -18,6 +18,10 @@ public class EventEditor extends AbstractForm<SpatialEvent> {
     private DateField date = new DateField("Date");
     private PointField location = new PointField("Location");
     private LineStringField route = new LineStringField("Route");
+
+    public EventEditor() {
+        super(SpatialEvent.class);
+    }
 
     @Override
     protected Component createContent() {
@@ -35,7 +39,11 @@ public class EventEditor extends AbstractForm<SpatialEvent> {
         w.setWidth("70%");
         return w;
     }
-    
-    
+
+    @Override
+    protected void bind() {
+        getBinder().forMemberField(date).withConverter(new LocalDateToDateConverter());
+        super.bind();
+    }
 
 }

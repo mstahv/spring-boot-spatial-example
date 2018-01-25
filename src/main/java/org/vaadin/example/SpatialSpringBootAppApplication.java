@@ -24,13 +24,16 @@ public class SpatialSpringBootAppApplication {
 		theEvent.setTitle("Example event");
 		theEvent.setDate(new Date());
 		theEvent.setLocation(factory.createPoint(new Coordinate(26, 62)));
+                theEvent.getLocation().setSRID(4326);
 		repo.save(theEvent);
 
 		SpatialEvent eventWithPath = new SpatialEvent();
 		Coordinate[] coords = new Coordinate[]{new Coordinate(22, 60),
 			new Coordinate(23, 61), new Coordinate(22, 63)};
 		eventWithPath.setRoute(factory.createLineString(coords));
+                eventWithPath.getRoute().setSRID(4326);
 		eventWithPath.setLocation(factory.createPoint(new Coordinate(22, 60)));
+                eventWithPath.getLocation().setSRID(4326);
 		eventWithPath.setDate(new Date());
 		eventWithPath.setTitle("MTB cup 1/10");
 		repo.save(eventWithPath);
