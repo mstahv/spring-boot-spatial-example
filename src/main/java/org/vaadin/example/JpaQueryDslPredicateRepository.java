@@ -5,12 +5,11 @@ import java.util.List;
 
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.support.QueryDslJpaRepository;
-import org.springframework.data.querydsl.QueryDslPredicateExecutor;
 import org.springframework.data.repository.NoRepositoryBean;
 
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Predicate;
+import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 
 /**
  * Convenience interface for {@link QueryDslPredicateExecutor} with
@@ -22,7 +21,7 @@ import com.querydsl.core.types.Predicate;
  */
 @NoRepositoryBean
 public interface JpaQueryDslPredicateRepository<T, ID extends Serializable>
-		extends QueryDslPredicateExecutor<T>, JpaRepository<T, ID> {
+		extends JpaRepository<T, ID>, QuerydslPredicateExecutor<T> {
 	@Override
 	List<T> findAll(OrderSpecifier<?>... orders);
 
