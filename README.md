@@ -5,7 +5,8 @@
 This is a small example app that shows how one can use
 
  * [Spring Boot](http://projects.spring.io/spring-boot/) and [Spring Data](http://projects.spring.io/spring-data/)
- * Latest [Hibernate](http://hibernate.org/orm/) with spatial features. At the application API, only standard JPA stuff (and Spring Data) is used. The example uses more recent version than provided by Spring boms, to overcome some issues with spatial features.
+ * Latest [Hibernate](http://hibernate.org/orm/) with spatial features. At the application API, only standard JPA stuff (and Spring Data) is used.
+ * The example also uses [QueryDSL](http://www.querydsl.com) spatial query as an example. QueryDSL contain excellent support for spatial types.
  * Relational database, like GeoDB/H2 (default) or MySQL, which supports basic spatial types. If you want to run this example on MySQL, prepare a "spatialdemo" database and change DB credentials in src/main/resources/application.properties. It should be rather easy to switch to another DB supported by Hibernate as well. Geometry types in DB are bit non-standard, that is something you might need to adjust a bit.
  * [Vaadin](https://vaadin.com/framework) and V-Leaflet add-on to build the UI layer. V-Leaflet is a Vaadin wrapper for [Leaflet](http://leafletjs.com), the awesome slippy map library. With V-Leaflet we use the [Editable extension](https://vaadin.com/directory#!addon/v-leaflet-editable) and its Vaadin Field implementations which make it dead simple to edit [JTS](http://tsusiatsoftware.net/jts/main.html) data types directly from the JPA entities. 
  * As baselayer for maps, OpenStreetMap layer is used, but naturally any common background map can be used.
