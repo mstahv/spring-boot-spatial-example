@@ -18,9 +18,10 @@ public class FilterPanel extends CustomComponent implements ValueChangeListener 
         void onFilterChange();
     }
 
-    private MCheckBox onlyOnMap = new MCheckBox("Only events in current viewport").withValue(false)
+    private MCheckBox onlyOnMap = new MCheckBox("Only events in current viewport").withValue(true)
             .withValueChangeListener(this);
-    private MTextField title = new MTextField("Title")
+    private MTextField title = new MTextField()
+            .withPlaceholder("Filter by title")
             .withValueChangeMode(ValueChangeMode.LAZY)
             .withValueChangeListener(this);
     private FilterPanelObserver observer = null;

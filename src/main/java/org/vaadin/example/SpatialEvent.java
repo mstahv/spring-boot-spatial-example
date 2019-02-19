@@ -4,11 +4,11 @@ import java.util.Date;
 
 import javax.persistence.Entity;
 
-import com.vividsolutions.jts.geom.LineString;
-import com.vividsolutions.jts.geom.Point;
 import javax.persistence.Column;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import org.locationtech.jts.geom.LineString;
+import org.locationtech.jts.geom.Point;
 
 @Entity
 public class SpatialEvent extends AbstractEntity {

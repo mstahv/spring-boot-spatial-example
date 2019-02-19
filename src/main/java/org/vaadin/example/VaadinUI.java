@@ -16,21 +16,26 @@ import org.vaadin.viritin.label.RichText;
 import org.vaadin.viritin.layouts.MHorizontalLayout;
 import org.vaadin.viritin.layouts.MVerticalLayout;
 
-import com.querydsl.core.types.Predicate;
-import com.querydsl.core.types.dsl.BooleanExpression;
 import com.vaadin.annotations.Theme;
 import com.vaadin.contextmenu.ContextMenu;
+import com.vaadin.icons.VaadinIcons;
 import com.vaadin.server.FontAwesome;
+import com.vaadin.server.Page;
 import com.vaadin.server.VaadinRequest;
+import com.vaadin.server.WebBrowser;
 import com.vaadin.spring.annotation.SpringUI;
+import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickListener;
+import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.Window;
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.GeometryFactory;
-import com.vividsolutions.jts.geom.LinearRing;
-import com.vividsolutions.jts.geom.Polygon;
+import com.vaadin.ui.themes.ValoTheme;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.LinearRing;
+import org.locationtech.jts.geom.Polygon;
 import org.vaadin.viritin.grid.MGrid;
 
 /**
@@ -54,7 +59,7 @@ public class VaadinUI extends UI implements ClickListener, Window.CloseListener,
             + "features to your Spring Boot Vaadin app. "
             + "[Check out the sources!](https://github.com/mstahv/spring-boot-spatial-example)");
     private MGrid<SpatialEvent> table;
-    private Button addNew = new Button("Add event", this);
+    private Button addNew = new MButton("Add event", this).withIcon(VaadinIcons.PLUS);
     private LMap map = new LMap();
     private LTileLayer osmTiles = new LOpenStreetMapLayer();
 
@@ -65,27 +70,37 @@ public class VaadinUI extends UI implements ClickListener, Window.CloseListener,
     @Override
     protected void init(VaadinRequest request) {
 
+        map.zoomToExtent(new Bounds(new Point(60, 21), new Point(68, 24)));
+
         filterPanel.setObserver(this);
         table = new MGrid<>(SpatialEvent.class);
-        table.withFullWidth();
         table.withProperties("id", "title", "date");
         table.addComponentColumn(spatialEvent -> {
-            Button edit = new MButton(FontAwesome.EDIT, e -> {
-                editInPopup(spatialEvent);
-            });
-            Button delete = new MButton(FontAwesome.TRASH, e -> {
-                repo.delete(spatialEvent);
-                loadEvents(filterPanel.isOnlyOnMap(), filterPanel.getTitle());
-            });
-            return new MHorizontalLayout(edit, delete);
+            return new MHorizontalLayout(
+                    new MButton(VaadinIcons.EDIT, e -> {
+                        editInPopup(spatialEvent);
+                    }).withStyleName(ValoTheme.BUTTON_BORDERLESS),
+                    new MButton(VaadinIcons.TRASH, e -> {
+                        repo.delete(spatialEvent);
+                        loadEvents(filterPanel.isOnlyOnMap(), filterPanel.getTitle());
+                    }).withStyleName(ValoTheme.BUTTON_BORDERLESS));
         }).setCaption("Actions");
 
         loadEvents(filterPanel.isOnlyOnMap(), filterPanel.getTitle());
 
         osmTiles.setAttributionString("© OpenStreetMap Contributors");
+        final MVerticalLayout mainLayout = new MVerticalLayout(
+                infoText,
+                new MHorizontalLayout().expand(filterPanel).add(addNew))
+                .alignAll(Alignment.MIDDLE_LEFT);
+        if (Page.getCurrent().getBrowserWindowWidth() > 800) {
+            mainLayout.expand(new MHorizontalLayout().expand(map).add(table).withFullHeight());
+        } else {
+            // in moble devices, layout out vertically
+            mainLayout.expand(map, table);
+        }
 
-        setContent(new MVerticalLayout(infoText, new MHorizontalLayout(addNew)).expand(map).add(filterPanel)
-                .expand(table));
+        setContent(mainLayout);
 
         // You can also use ContextMenu Add-on with Leaflemap 
         // Give "false" as a second parameter -> disables automatic opening of the menu.
@@ -125,10 +140,11 @@ public class VaadinUI extends UI implements ClickListener, Window.CloseListener,
     }
 
     private void loadEvents(boolean onlyInViewport, String titleContains) {
-        Predicate predicate = createPredicate(onlyInViewport, titleContains);
-        List<SpatialEvent> events = null;
-        if (predicate != null) {
-            events = repo.findAll(predicate);
+
+        List<SpatialEvent> events;
+        if (map.getBounds() != null) {
+            Polygon polygon = toPolygon(map.getBounds());
+            events = repo.findAllWithin(polygon, "%" + titleContains + "%");
         } else {
             events = repo.findAll();
         }
@@ -148,30 +164,6 @@ public class VaadinUI extends UI implements ClickListener, Window.CloseListener,
         }
     }
 
-    private Predicate createPredicate(boolean onlyInViewport, String titleContains) {
-        //QSpatialEvent missing? Do a priming build aka "mvn install". 
-        // QSpatialEvent is a helper class automatically generated by QueryDSL
-        QSpatialEvent qspatialEvent = QSpatialEvent.spatialEvent;
-        BooleanExpression intersection = null;
-        BooleanExpression predicate = null;
-        if (onlyInViewport) {
-            Polygon polygon = toPolygon(map.getBounds());
-            intersection = qspatialEvent.location.intersects(polygon);
-        }
-        BooleanExpression title = null;
-        if (StringUtils.isNotBlank(titleContains)) {
-            title = qspatialEvent.title.containsIgnoreCase(titleContains);
-        }
-        if (intersection != null && title != null) {
-            predicate = title.and(intersection);
-        } else if (intersection != null) {
-            predicate = intersection;
-        } else if (title != null) {
-            predicate = title;
-        }
-        return predicate;
-    }
-
     private Polygon toPolygon(Bounds bounds) {
         GeometryFactory factory = new GeometryFactory();
         double north = bounds.getNorthEastLat();
@@ -187,7 +179,7 @@ public class VaadinUI extends UI implements ClickListener, Window.CloseListener,
         return polygon;
     }
 
-    private void addEventVector(final com.vividsolutions.jts.geom.Geometry g, final SpatialEvent spatialEvent) {
+    private void addEventVector(final Geometry g, final SpatialEvent spatialEvent) {
         if (g != null) {
             /*
             * JTSUtil wil make LMarker for point event,
