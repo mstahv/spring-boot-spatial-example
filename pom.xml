@@ -132,6 +132,15 @@
     </build>
     <repositories>
         <repository>
+            <id>osgeo-alt</id>
+            <url>https://repo.osgeo.org/repository/release/</url>
+        </repository>
+        <repository>
+            <id>geomajas</id>
+            <name>Geomajas Maven Repository</name>
+            <url>http://maven.geomajas.org/(http://maven.geomajas.org/)</url>
+        </repository>        
+        <repository>
             <!-- Needed for geodb -->
             <id>boundless</id>
             <url>http://repo.boundlessgeo.com/main/</url>
