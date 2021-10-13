@@ -18,7 +18,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <java.version>1.8</java.version>
-        <vaadin.version>8.7.0</vaadin.version>
+        <vaadin.version>8.14.1</vaadin.version>
         <vaadin.widgetset.mode>local</vaadin.widgetset.mode>
         <hibernate.version>5.4.1.Final</hibernate.version>
     </properties>
