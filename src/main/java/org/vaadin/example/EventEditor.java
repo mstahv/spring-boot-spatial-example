@@ -1,26 +1,27 @@
 package org.vaadin.example;
 
-import com.vaadin.data.converter.LocalDateToDateConverter;
-import org.vaadin.addon.leaflet.util.PointField;
 
-import com.vaadin.ui.Component;
-import com.vaadin.ui.DateField;
-import com.vaadin.ui.TextField;
-import com.vaadin.ui.Window;
-import org.vaadin.addon.leaflet.editable.LineStringField;
-import org.vaadin.viritin.fields.MTextField;
-import org.vaadin.viritin.form.AbstractForm;
-import org.vaadin.viritin.layouts.MVerticalLayout;
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.datepicker.DatePicker;
+import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.data.converter.LocalDateToDateConverter;
+import org.vaadin.addons.maplibre.LineStringField;
+import org.vaadin.addons.maplibre.PointField;
+import org.vaadin.firitin.components.dialog.VDialog;
+import org.vaadin.firitin.components.orderedlayout.VVerticalLayout;
+import org.vaadin.firitin.components.textfield.VTextField;
+import org.vaadin.firitin.form.AbstractForm;
 
-public class EventEditor extends AbstractForm<SpatialEvent> {
+public class EventEditor extends AbstractForm<SportEvent> {
 
-    private TextField title = new MTextField("Title");
-    private DateField date = new DateField("Date");
+    private TextField title = new VTextField("Title");
+    private DatePicker date = new DatePicker("Date");
+    // TODO fix the constructor parameter to be "field like"
     private PointField location = new PointField("Location");
     private LineStringField route = new LineStringField("Route");
 
     public EventEditor() {
-        super(SpatialEvent.class);
+        super(SportEvent.class);
     }
 
     @Override
@@ -29,12 +30,12 @@ public class EventEditor extends AbstractForm<SpatialEvent> {
         location.setWidth("100%");
         route.setHeight("200px");
         route.setWidth("100%");
-        return new MVerticalLayout(title, date, location, route, getToolbar());
+        return new VVerticalLayout(title, date, location, route, getToolbar());
     }
 
     @Override
-    public Window openInModalPopup() {
-        Window w = super.openInModalPopup();
+    public VDialog openInModalPopup() {
+        var w = super.openInModalPopup();
         w.setHeight("95%");
         w.setWidth("70%");
         return w;

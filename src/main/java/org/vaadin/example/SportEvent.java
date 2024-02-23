@@ -2,16 +2,16 @@ package org.vaadin.example;
 
 import java.util.Date;
 
-import javax.persistence.Entity;
+import jakarta.persistence.Entity;
 
-import javax.persistence.Column;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Temporal;
+import jakarta.persistence.TemporalType;
 import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.Point;
 
 @Entity
-public class SpatialEvent extends AbstractEntity {
+public class SportEvent extends AbstractEntity {
 
     private String title;
 
@@ -26,7 +26,7 @@ public class SpatialEvent extends AbstractEntity {
     @Column(columnDefinition = "geometry")
     private LineString route;
 
-    public SpatialEvent() {
+    public SportEvent() {
     }
 
     public Date getDate() {

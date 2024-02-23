@@ -2,74 +2,39 @@ package org.vaadin.example;
 
 import java.util.List;
 
-import org.apache.commons.lang3.StringUtils;
-import org.vaadin.addon.leaflet.AbstractLeafletLayer;
-import org.vaadin.addon.leaflet.LMap;
-import org.vaadin.addon.leaflet.LOpenStreetMapLayer;
-import org.vaadin.addon.leaflet.LTileLayer;
-import org.vaadin.addon.leaflet.shared.Bounds;
-import org.vaadin.addon.leaflet.shared.Point;
-import org.vaadin.addon.leaflet.util.JTSUtil;
-import org.vaadin.example.FilterPanel.FilterPanelObserver;
-import org.vaadin.viritin.button.MButton;
-import org.vaadin.viritin.label.RichText;
-import org.vaadin.viritin.layouts.MHorizontalLayout;
-import org.vaadin.viritin.layouts.MVerticalLayout;
-
-import com.vaadin.annotations.Theme;
-import com.vaadin.contextmenu.ContextMenu;
-import com.vaadin.icons.VaadinIcons;
-import com.vaadin.server.FontAwesome;
-import com.vaadin.server.Page;
-import com.vaadin.server.VaadinRequest;
-import com.vaadin.server.WebBrowser;
-import com.vaadin.spring.annotation.SpringUI;
-import com.vaadin.ui.Alignment;
-import com.vaadin.ui.Button;
-import com.vaadin.ui.Button.ClickListener;
-import com.vaadin.ui.HorizontalLayout;
-import com.vaadin.ui.UI;
-import com.vaadin.ui.Window;
-import com.vaadin.ui.themes.ValoTheme;
-import org.locationtech.jts.geom.Coordinate;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.router.Route;
 import org.locationtech.jts.geom.Geometry;
-import org.locationtech.jts.geom.GeometryFactory;
-import org.locationtech.jts.geom.LinearRing;
-import org.locationtech.jts.geom.Polygon;
-import org.vaadin.viritin.grid.MGrid;
+import org.locationtech.jts.geom.LineString;
+import org.locationtech.jts.geom.Point;
+import org.vaadin.addons.maplibre.LinePaint;
+import org.vaadin.addons.maplibre.MapLibre;
+import org.vaadin.example.FilterPanel.FilterPanelObserver;
+import org.vaadin.firitin.components.RichText;
+import org.vaadin.firitin.components.button.VButton;
+import org.vaadin.firitin.components.grid.VGrid;
 
 /**
  * @author mstahv
  */
-@Theme("valo")
-@SpringUI
-public class VaadinUI extends UI implements ClickListener, Window.CloseListener, FilterPanelObserver {
+@Route
+public class MainView extends VerticalLayout implements FilterPanelObserver {
 
-    SpatialEventRepository repo;
+    SportEventRepository repo;
 
-    public VaadinUI(SpatialEventRepository repo) {
+    public MainView(SportEventRepository repo, SportEventService service) {
         this.repo = repo;
-    }
+        if(repo.count() == 0) {
+            service.insertTestData();
+        }
+        add(map);
+        add(table);
 
-    private Point lastContextMenuPosition;
+        loadEvents(false, null);
 
-    private RichText infoText = new RichText().withMarkDown(
-            "###V-Leaflet example\n\n"
-            + "This is small example app to demonstrate how to add simple GIS "
-            + "features to your Spring Boot Vaadin app. "
-            + "[Check out the sources!](https://github.com/mstahv/spring-boot-spatial-example)");
-    private MGrid<SpatialEvent> table;
-    private Button addNew = new MButton("Add event", this).withIcon(VaadinIcons.PLUS);
-    private LMap map = new LMap();
-    private LTileLayer osmTiles = new LOpenStreetMapLayer();
-
-    private EventEditor editor = new EventEditor();
-
-    private FilterPanel filterPanel = new FilterPanel();
-
-    @Override
-    protected void init(VaadinRequest request) {
-
+        /*
         map.zoomToExtent(new Bounds(new Point(60, 21), new Point(68, 24)));
 
         filterPanel.setObserver(this);
@@ -102,7 +67,7 @@ public class VaadinUI extends UI implements ClickListener, Window.CloseListener,
 
         setContent(mainLayout);
 
-        // You can also use ContextMenu Add-on with Leaflemap 
+        // You can also use ContextMenu Add-on with Leaflemap
         // Give "false" as a second parameter -> disables automatic opening of the menu.
         // We'll open context menu programmatically
         ContextMenu contextMenu = new ContextMenu(map, false);
@@ -131,39 +96,72 @@ public class VaadinUI extends UI implements ClickListener, Window.CloseListener,
             editor.closePopup();
             loadEvents(filterPanel.isOnlyOnMap(), filterPanel.getTitle());
         });
+        */
 
     }
 
-    private void editInPopup(SpatialEvent eventWithPoint) {
+    private Point lastContextMenuPosition;
+
+    private RichText infoText = new RichText().withMarkDown(
+            "###V-Leaflet example\n\n"
+            + "This is small example app to demonstrate how to add simple GIS "
+            + "features to your Spring Boot Vaadin app. "
+            + "[Check out the sources!](https://github.com/mstahv/spring-boot-spatial-example)");
+    private VGrid<SportEvent> table = new VGrid<>(SportEvent.class);
+    private Button addNew = new VButton("Add event", this).withIcon(VaadinIcon.PLUS.create());
+    // TODO get a new API key
+    private MapLibre map = new MapLibre("https://api.maptiler.com/maps/streets/style.json?key=G5n7stvZjomhyaVYP0qU");
+
+    private EventEditor editor = new EventEditor();
+
+    private FilterPanel filterPanel = new FilterPanel();
+
+
+    private void editInPopup(SportEvent eventWithPoint) {
         editor.setEntity(eventWithPoint);
         editor.openInModalPopup();
     }
 
     private void loadEvents(boolean onlyInViewport, String titleContains) {
 
-        List<SpatialEvent> events;
+        List<SportEvent> events;
+        /*
+        TODO bounds changed listener to MapLibre
         if (map.getBounds() != null) {
             Polygon polygon = toPolygon(map.getBounds());
             events = repo.findAllWithin(polygon, "%" + titleContains + "%");
         } else {
             events = repo.findAll();
         }
+         */
+        events = repo.findAll();
 
         /* Populate table... */
-        table.setRows(events);
+        table.setItems(events);
 
         /* ... and map */
-        map.removeAllComponents();
-        map.addBaseLayer(osmTiles, "OSM");
-        for (final SpatialEvent spatialEvent : events) {
-            addEventVector(spatialEvent.getLocation(), spatialEvent);
-            addEventVector(spatialEvent.getRoute(), spatialEvent);
+        for (final SportEvent sportEvent : events) {
+            addToMap(sportEvent.getLocation(), sportEvent);
+            addToMap(sportEvent.getRoute(), sportEvent);
         }
         if (!filterPanel.isOnlyOnMap()) {
-            map.zoomToContent();
+            // TODO add feature to MapLibre
+            // map.zoomToContent();
         }
     }
 
+    private void addToMap(final Geometry g, final SportEvent event) {
+        if (g != null) {
+            // TODO pick to editor from click listeners
+            if(g instanceof Point p) {
+                map.addMarker(p.getX(), p.getY());
+            } else if(g instanceof LineString ls) {
+                map.addLineLayer(ls, new LinePaint("blue", 3.0));
+            }
+        }
+    }
+
+    /*
     private Polygon toPolygon(Bounds bounds) {
         GeometryFactory factory = new GeometryFactory();
         double north = bounds.getNorthEastLat();
@@ -178,48 +176,31 @@ public class VaadinUI extends UI implements ClickListener, Window.CloseListener,
         polygon.setSRID(4326);
         return polygon;
     }
+     */
 
-    private void addEventVector(final Geometry g, final SpatialEvent spatialEvent) {
-        if (g != null) {
-            /*
-            * JTSUtil wil make LMarker for point event,
-            * LPolyline for events with route
-             */
-            AbstractLeafletLayer layer = (AbstractLeafletLayer) JTSUtil.
-                    toLayer(g);
-
-            /* Add click listener to open event editor */
-            layer.addClickListener(e -> {
-                editor.setEntity(spatialEvent);
-                editor.focusFirst();
-                editor.openInModalPopup();
-            });
-            map.addLayer(layer);
-        }
-    }
-
-    @Override
-    public void buttonClick(Button.ClickEvent event) {
-        if (event.getButton() == addNew) {
-            editor.setEntity(new SpatialEvent());
-            editor.focusFirst();
-            editor.openInModalPopup();
-        }
-    }
-
-    @Override
-    public void addWindow(Window window) throws IllegalArgumentException,
-            NullPointerException {
-        super.addWindow(window);
-        window.addCloseListener(this);
-    }
-
-    @Override
-    public void windowClose(Window.CloseEvent e) {
-        // refresh table after edit
-        loadEvents(filterPanel.isOnlyOnMap(), filterPanel.getTitle());
-    }
-
+//
+//    @Override
+//    public void buttonClick(Button.ClickEvent event) {
+//        if (event.getButton() == addNew) {
+//            editor.setEntity(new SpatialEvent());
+//            editor.focusFirst();
+//            editor.openInModalPopup();
+//        }
+//    }
+//
+//    @Override
+//    public void addWindow(Window window) throws IllegalArgumentException,
+//            NullPointerException {
+//        super.addWindow(window);
+//        window.addCloseListener(this);
+//    }
+//
+//    @Override
+//    public void windowClose(Window.CloseEvent e) {
+//        // refresh table after edit
+//        loadEvents(filterPanel.isOnlyOnMap(), filterPanel.getTitle());
+//    }
+//
     @Override
     public void onFilterChange() {
         loadEvents(filterPanel.isOnlyOnMap(), filterPanel.getTitle());
