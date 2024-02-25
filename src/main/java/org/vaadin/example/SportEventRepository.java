@@ -9,17 +9,18 @@ import org.springframework.data.repository.query.Param;
 /**
  * @author mstahv
  */
-public interface SpatialEventRepository extends JpaRepository<SpatialEvent, Long> {
+public interface SportEventRepository extends JpaRepository<SportEvent, Long> {
 
     /**
      * Example method of a GIS query. This uses Hibernate spatial extensions, so
      * it does not work with other JPA implementations.
      *
      * @param bounds the geometry
-     * @param titleFilter the filter string
      * @return SpatialEvents inside given geometry and with given filter for the title
      */
-    @Query(value = "SELECT se FROM SpatialEvent se WHERE within(se.location, :bounds) = true AND se.title LIKE :filter")
-    public List<SpatialEvent> findAllWithin(@Param("bounds") Geometry bounds, @Param("filter") String titleFilter);
+    @Query(value = "SELECT se FROM SportEvent se WHERE within(se.location, :bounds) = true")
+    public List<SportEvent> findAllWithin(@Param("bounds") Geometry bounds);
+
+    public List<SportEvent> findByTitleContainingIgnoreCase(String title);
 
 }
