@@ -1,17 +1,13 @@
 package org.vaadin.example;
 
-import java.time.LocalDate;
-import java.util.Date;
-
-import jakarta.persistence.Entity;
-
 import jakarta.persistence.Column;
-import jakarta.persistence.Temporal;
-import jakarta.persistence.TemporalType;
+import jakarta.persistence.Entity;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.Point;
+
+import java.time.LocalDate;
 
 @Entity
 public class SportEvent extends AbstractEntity {

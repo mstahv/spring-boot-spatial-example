@@ -3,12 +3,9 @@ package org.vaadin.example;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.icon.VaadinIcon;
-import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.Route;
-import org.locationtech.jts.geom.Geometry;
-import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
 import org.vaadin.addons.maplibre.DrawControl;
@@ -36,10 +33,8 @@ public class MainView extends VVerticalLayout {
     // This is for Maplibre }> integration
     public static final String MAPTILER_STREETS = "https://api.maptiler.com/maps/streets/style.json?key=G5n7stvZjomhyaVYP0qU";
     private final SportEventService service;
-    SportEventRepository repo;
     TextField filter = new VTextField()
             .withPlaceholder("Filter by name...");
-    private Point lastContextMenuPosition;
 
     private Map<SportEvent,Marker> eventToMarker = new HashMap<>();
 
@@ -58,12 +53,9 @@ public class MainView extends VVerticalLayout {
 
     private MapLibre map = new MapLibre(MAPTILER_STREETS);
 
-    public MainView(SportEventRepository repo, SportEventService service) {
+    public MainView(SportEventService service) {
         this.service = service;
-        this.repo = repo;
-        if (repo.count() == 0) {
-            service.insertTestData();
-        }
+        service.ensureTestData();
 
         var drawControl = new DrawControl(map);
         drawControl.addGeometryChangeListener(e -> {
@@ -125,7 +117,7 @@ public class MainView extends VVerticalLayout {
     }
 
     private void loadEventsByNameFilter(String value) {
-        List<SportEvent> events = repo.findByTitleContainingIgnoreCase(value);
+        List<SportEvent> events = service.filterByTitle(value);
         map.fitToContent();
         setEvents(events);
     }
@@ -138,8 +130,7 @@ public class MainView extends VVerticalLayout {
     }
 
     private void loadEventsWithinBounds(Polygon bounds) {
-        List<SportEvent> events = repo.findAllWithin(bounds);
-        setEvents(events);
+        setEvents(service.filterByBounds(bounds));
     }
 
     private void setEvents(List<SportEvent> events) {
