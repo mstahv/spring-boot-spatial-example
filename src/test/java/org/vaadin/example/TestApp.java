@@ -6,7 +6,7 @@ public class TestApp {
 
     public static void main(String[] args) {
         SpringApplication.from(Application::main)
-                .with(MysqlTestContainerConfiguration.class)
+                .with(DatabaseTestContainerConfiguration.class)
                 .run(args);
     }
 

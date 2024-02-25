@@ -1,209 +1,177 @@
 package org.vaadin.example;
 
-import java.util.List;
-
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.icon.VaadinIcon;
-import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.Route;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.Point;
+import org.locationtech.jts.geom.Polygon;
+import org.vaadin.addons.maplibre.DrawControl;
 import org.vaadin.addons.maplibre.LinePaint;
 import org.vaadin.addons.maplibre.MapLibre;
-import org.vaadin.example.FilterPanel.FilterPanelObserver;
+import org.vaadin.addons.maplibre.Marker;
 import org.vaadin.firitin.components.RichText;
+import org.vaadin.firitin.components.button.DeleteButton;
 import org.vaadin.firitin.components.button.VButton;
 import org.vaadin.firitin.components.grid.VGrid;
+import org.vaadin.firitin.components.orderedlayout.VVerticalLayout;
+import org.vaadin.firitin.components.textfield.VTextField;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author mstahv
  */
 @Route
-public class MainView extends VerticalLayout implements FilterPanelObserver {
+public class MainView extends VVerticalLayout {
 
+    // TODO get a new API key for this example or get some other bg
+    // This is for Maplibre }> integration
+    public static final String MAPTILER_STREETS = "https://api.maptiler.com/maps/streets/style.json?key=G5n7stvZjomhyaVYP0qU";
+    private final SportEventService service;
     SportEventRepository repo;
-
-    public MainView(SportEventRepository repo, SportEventService service) {
-        this.repo = repo;
-        if(repo.count() == 0) {
-            service.insertTestData();
-        }
-        add(map);
-        add(table);
-
-        loadEvents(false, null);
-
-        /*
-        map.zoomToExtent(new Bounds(new Point(60, 21), new Point(68, 24)));
-
-        filterPanel.setObserver(this);
-        table = new MGrid<>(SpatialEvent.class);
-        table.withProperties("id", "title", "date");
-        table.addComponentColumn(spatialEvent -> {
-            return new MHorizontalLayout(
-                    new MButton(VaadinIcons.EDIT, e -> {
-                        editInPopup(spatialEvent);
-                    }).withStyleName(ValoTheme.BUTTON_BORDERLESS),
-                    new MButton(VaadinIcons.TRASH, e -> {
-                        repo.delete(spatialEvent);
-                        loadEvents(filterPanel.isOnlyOnMap(), filterPanel.getTitle());
-                    }).withStyleName(ValoTheme.BUTTON_BORDERLESS));
-        }).setCaption("Actions");
-
-        loadEvents(filterPanel.isOnlyOnMap(), filterPanel.getTitle());
-
-        osmTiles.setAttributionString("© OpenStreetMap Contributors");
-        final MVerticalLayout mainLayout = new MVerticalLayout(
-                infoText,
-                new MHorizontalLayout().expand(filterPanel).add(addNew))
-                .alignAll(Alignment.MIDDLE_LEFT);
-        if (Page.getCurrent().getBrowserWindowWidth() > 800) {
-            mainLayout.expand(new MHorizontalLayout().expand(map).add(table).withFullHeight());
-        } else {
-            // in moble devices, layout out vertically
-            mainLayout.expand(map, table);
-        }
-
-        setContent(mainLayout);
-
-        // You can also use ContextMenu Add-on with Leaflemap
-        // Give "false" as a second parameter -> disables automatic opening of the menu.
-        // We'll open context menu programmatically
-        ContextMenu contextMenu = new ContextMenu(map, false);
-        contextMenu.addItem("Add new event here", e -> {
-            SpatialEvent eventWithPoint = new SpatialEvent();
-            eventWithPoint.setLocation(JTSUtil.toPoint(lastContextMenuPosition));
-            editInPopup(eventWithPoint);
-        });
-
-        // Hook to context menu event API by the Leaflet Map
-        map.addContextMenuListener(event -> {
-            // save the point to be used by context menu listener
-            lastContextMenuPosition = event.getPoint();
-            // you could here also configure what to show in the menu
-            contextMenu.open((int) event.getClientX(), (int) event.getClientY());
-        });
-
-        map.addMoveEndListener(event -> {
-            if (filterPanel.isOnlyOnMap()) {
-                onFilterChange();
-            }
-        });
-
-        editor.setSavedHandler(spatialEvent -> {
-            repo.save(spatialEvent);
-            editor.closePopup();
-            loadEvents(filterPanel.isOnlyOnMap(), filterPanel.getTitle());
-        });
-        */
-
-    }
-
+    TextField filter = new VTextField()
+            .withPlaceholder("Filter by name...");
     private Point lastContextMenuPosition;
+
+    private Map<SportEvent,Marker> eventToMarker = new HashMap<>();
 
     private RichText infoText = new RichText().withMarkDown(
             "###V-Leaflet example\n\n"
-            + "This is small example app to demonstrate how to add simple GIS "
-            + "features to your Spring Boot Vaadin app. "
-            + "[Check out the sources!](https://github.com/mstahv/spring-boot-spatial-example)");
+                    + "This is small example app to demonstrate how to add simple GIS "
+                    + "features to your Spring Boot Vaadin app. "
+                    + "[Check out the sources!](https://github.com/mstahv/spring-boot-spatial-example)");
     private VGrid<SportEvent> table = new VGrid<>(SportEvent.class);
-    private Button addNew = new VButton("Add event", this).withIcon(VaadinIcon.PLUS.create());
-    // TODO get a new API key
-    private MapLibre map = new MapLibre("https://api.maptiler.com/maps/streets/style.json?key=G5n7stvZjomhyaVYP0qU");
+    private Button addNew = new VButton("New event...")
+            .withIcon(VaadinIcon.PLUS.create())
+            .withClickListener(e -> {
+                UI.getCurrent().navigate(EventEditor.class)
+                        .get().setEntity(new SportEvent());
+            });
 
-    private EventEditor editor = new EventEditor();
+    private MapLibre map = new MapLibre(MAPTILER_STREETS);
 
-    private FilterPanel filterPanel = new FilterPanel();
+    public MainView(SportEventRepository repo, SportEventService service) {
+        this.service = service;
+        this.repo = repo;
+        if (repo.count() == 0) {
+            service.insertTestData();
+        }
+
+        var drawControl = new DrawControl(map);
+        drawControl.addGeometryChangeListener(e -> {
+            Polygon p = (Polygon) e.getGeom().getGeometryN(0);
+            loadEventsWithinBounds(p);
+            drawControl.clear();
+        });
+
+        add(new HorizontalLayout(
+                addNew,
+                new VButton("Draw area to list events", e -> {
+                    drawControl.setMode(DrawControl.DrawMode.DRAW_POLYGON);
+                }),
+                new VButton("List events within viewport", e -> {
+                    loadEventsInViewport();
+                }),
+                filter
+        ));
+        withExpanded(map);
+        add(table);
+        map.setWidthFull();
 
 
-    private void editInPopup(SportEvent eventWithPoint) {
-        editor.setEntity(eventWithPoint);
-        editor.openInModalPopup();
+        filter.addValueChangeListener(e -> {
+            loadEventsByNameFilter(e.getValue());
+        });
+
+        table.addComponentColumn(sportEvent ->
+                new HorizontalLayout(
+                        new VButton(VaadinIcon.EDIT.create(), e-> {
+                            UI.getCurrent().navigate(EventEditor.class).get()
+                                    .setEntity(sportEvent);
+                        }),
+                        new DeleteButton(() -> {
+                            delete(sportEvent);
+                        })
+                ));
+
+
+
+        table.asSingleSelect().addValueChangeListener(e -> {
+            SportEvent sportEvent = e.getValue();
+            if(e.isFromClient() && sportEvent != null) {
+                // open marker popup and center the map to event
+                Marker marker = eventToMarker.get(sportEvent);
+                marker.openPopup();
+                map.flyTo(marker.getGeometry(), 10);
+            }
+        });
+
+        loadEventsByNameFilter("");
+        map.fitToContent();
+
     }
 
-    private void loadEvents(boolean onlyInViewport, String titleContains) {
+    public void delete(SportEvent event) {
+        service.delete(event);
+        loadEventsInViewport();
+    }
 
-        List<SportEvent> events;
-        /*
-        TODO bounds changed listener to MapLibre
-        if (map.getBounds() != null) {
-            Polygon polygon = toPolygon(map.getBounds());
-            events = repo.findAllWithin(polygon, "%" + titleContains + "%");
-        } else {
-            events = repo.findAll();
-        }
-         */
-        events = repo.findAll();
+    private void loadEventsByNameFilter(String value) {
+        List<SportEvent> events = repo.findByTitleContainingIgnoreCase(value);
+        map.fitToContent();
+        setEvents(events);
+    }
 
+    private void loadEventsInViewport() {
+        map.getViewPort().thenAccept(vp -> {
+            Polygon bounds = vp.getBounds();
+            loadEventsWithinBounds(bounds);
+        });
+    }
+
+    private void loadEventsWithinBounds(Polygon bounds) {
+        List<SportEvent> events = repo.findAllWithin(bounds);
+        setEvents(events);
+    }
+
+    private void setEvents(List<SportEvent> events) {
         /* Populate table... */
         table.setItems(events);
-
         /* ... and map */
+        map.removeAll();
+        eventToMarker.clear();
         for (final SportEvent sportEvent : events) {
-            addToMap(sportEvent.getLocation(), sportEvent);
-            addToMap(sportEvent.getRoute(), sportEvent);
-        }
-        if (!filterPanel.isOnlyOnMap()) {
-            // TODO add feature to MapLibre
-            // map.zoomToContent();
-        }
-    }
+            /*
+             * Adds geometries to the map. Note that this method adds a separate
+             * layer per geometry and is thus not very optimised. For better
+             * performance with a large number of geometries, combine layers
+             * or load features as vector tiles (~ lazy load only the visible portion)
+             * if there is a ton of those.
+             */
 
-    private void addToMap(final Geometry g, final SportEvent event) {
-        if (g != null) {
-            // TODO pick to editor from click listeners
-            if(g instanceof Point p) {
-                map.addMarker(p.getX(), p.getY());
-            } else if(g instanceof LineString ls) {
-                map.addLineLayer(ls, new LinePaint("blue", 3.0));
+            if(sportEvent.getLocation() != null){
+                Point p = sportEvent.getLocation();
+                Marker marker = map.addMarker(p)
+                        .withPopup(sportEvent.getTitle());
+                eventToMarker.put(sportEvent,marker);
+                marker.addClickListener( () -> {
+                    // focus in Table
+                    table.asSingleSelect().setValue(sportEvent);
+                });
+            }
+            if(sportEvent.getRoute() != null) {
+                map.addLineLayer(sportEvent.getRoute(), new LinePaint("blue", 3.0));
+                // TODO add click listener also for lines
             }
         }
-    }
-
-    /*
-    private Polygon toPolygon(Bounds bounds) {
-        GeometryFactory factory = new GeometryFactory();
-        double north = bounds.getNorthEastLat();
-        double south = bounds.getSouthWestLat();
-        double west = bounds.getSouthWestLon();
-        double east = bounds.getNorthEastLon();
-        Coordinate[] coords = new Coordinate[]{new Coordinate(east, north), new Coordinate(east, south),
-            new Coordinate(west, south), new Coordinate(west, north), new Coordinate(east, north)};
-        // GeoDb does not support LinerRing intersection, but polygon ?!
-        LinearRing lr = factory.createLinearRing(coords);
-        Polygon polygon = factory.createPolygon(lr, null);
-        polygon.setSRID(4326);
-        return polygon;
-    }
-     */
-
-//
-//    @Override
-//    public void buttonClick(Button.ClickEvent event) {
-//        if (event.getButton() == addNew) {
-//            editor.setEntity(new SpatialEvent());
-//            editor.focusFirst();
-//            editor.openInModalPopup();
-//        }
-//    }
-//
-//    @Override
-//    public void addWindow(Window window) throws IllegalArgumentException,
-//            NullPointerException {
-//        super.addWindow(window);
-//        window.addCloseListener(this);
-//    }
-//
-//    @Override
-//    public void windowClose(Window.CloseEvent e) {
-//        // refresh table after edit
-//        loadEvents(filterPanel.isOnlyOnMap(), filterPanel.getTitle());
-//    }
-//
-    @Override
-    public void onFilterChange() {
-        loadEvents(filterPanel.isOnlyOnMap(), filterPanel.getTitle());
     }
 
 }

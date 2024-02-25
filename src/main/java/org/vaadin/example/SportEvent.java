@@ -1,5 +1,6 @@
 package org.vaadin.example;
 
+import java.time.LocalDate;
 import java.util.Date;
 
 import jakarta.persistence.Entity;
@@ -7,33 +8,35 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.Point;
 
 @Entity
 public class SportEvent extends AbstractEntity {
 
+    @NotEmpty
     private String title;
 
-    @Temporal(TemporalType.DATE)
-    private Date date;
+    @Column(columnDefinition = "DATE")
+    private LocalDate date;
 
-    //@Column(columnDefinition = "POINT") // this type is known by MySQL
+    @NotNull
     @Column(columnDefinition = "geometry")
     private Point location;
 
-    // @Column(columnDefinition = "POLYGON") // this type is known by MySQL
     @Column(columnDefinition = "geometry")
     private LineString route;
 
     public SportEvent() {
     }
 
-    public Date getDate() {
+    public LocalDate getDate() {
         return date;
     }
 
-    public void setDate(Date date) {
+    public void setDate(LocalDate date) {
         this.date = date;
     }
 

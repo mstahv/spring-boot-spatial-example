@@ -16,11 +16,11 @@ public interface SportEventRepository extends JpaRepository<SportEvent, Long> {
      * it does not work with other JPA implementations.
      *
      * @param bounds the geometry
-     * @param titleFilter the filter string
      * @return SpatialEvents inside given geometry and with given filter for the title
      */
-    // TODO make this work, something has changed
- //   @Query(value = "SELECT se FROM SportEvent se WHERE within(se.location, :bounds) = true AND se.title LIKE :filter")
- //   public List<SportEvent> findAllWithin(@Param("bounds") Geometry bounds, @Param("filter") String titleFilter);
+    @Query(value = "SELECT se FROM SportEvent se WHERE within(se.location, :bounds) = true")
+    public List<SportEvent> findAllWithin(@Param("bounds") Geometry bounds);
+
+    public List<SportEvent> findByTitleContainingIgnoreCase(String title);
 
 }

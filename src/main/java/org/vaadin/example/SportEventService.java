@@ -2,8 +2,14 @@ package org.vaadin.example;
 
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.LineString;
+import org.locationtech.jts.geom.Point;
+import org.locationtech.jts.geom.PrecisionModel;
+import org.locationtech.jts.io.ParseException;
+import org.locationtech.jts.io.WKTReader;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.Date;
 
 @Service
@@ -18,23 +24,35 @@ public class SportEventService {
     public void insertTestData() {
         GeometryFactory factory = new GeometryFactory();
 
-        SportEvent theEvent = new SportEvent();
-        theEvent.setTitle("Example event");
-        theEvent.setDate(new Date());
-        theEvent.setLocation(factory.createPoint(new Coordinate(26, 62)));
-        theEvent.getLocation().setSRID(4326);
-        repo.save(theEvent);
+        WKTReader wktReader = new WKTReader(new GeometryFactory(new PrecisionModel(), 4326));
 
-        SportEvent eventWithPath = new SportEvent();
-        Coordinate[] coords = new Coordinate[]{new Coordinate(22, 60),
-                new Coordinate(23, 61), new Coordinate(22, 63)};
-        eventWithPath.setRoute(factory.createLineString(coords));
-        eventWithPath.getRoute().setSRID(4326);
-        eventWithPath.setLocation(factory.createPoint(new Coordinate(22, 60)));
-        eventWithPath.getLocation().setSRID(4326);
-        eventWithPath.setDate(new Date());
-        eventWithPath.setTitle("MTB cup 1/10");
-        repo.save(eventWithPath);
 
+        try {
+            SportEvent theEvent = new SportEvent();
+            theEvent.setTitle("Example event");
+            theEvent.setDate(LocalDate.now());
+            theEvent.setLocation((Point) wktReader.read("POINT (26 62)"));
+            theEvent.setRoute((LineString) wktReader.read("LINESTRING (26 62, 27 62, 27 63)"));
+            repo.save(theEvent);
+
+            SportEvent eventWithPath = new SportEvent();
+            eventWithPath.setRoute((LineString) wktReader.read("LINESTRING (22 60, 23 61, 22 63)"));
+            eventWithPath.setLocation((Point) wktReader.read("POINT (22 60)"));
+            eventWithPath.setDate(LocalDate.now());
+            eventWithPath.setTitle("MTB cup 1/10");
+            repo.save(eventWithPath);
+
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
+
+    public void save(SportEvent sportevent) {
+        repo.save(sportevent);
+    }
+
+    public void delete(SportEvent event) {
+        repo.deleteById(event.getId());
     }
 }
