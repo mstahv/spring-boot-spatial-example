@@ -29,9 +29,6 @@ import java.util.Map;
 @Route
 public class MainView extends VVerticalLayout {
 
-    // TODO get a new API key for this example or get some other bg
-    // This is for Maplibre }> integration
-    public static final String MAPTILER_STREETS = "https://api.maptiler.com/maps/streets/style.json?key=G5n7stvZjomhyaVYP0qU";
     private final SportEventService service;
     TextField filter = new VTextField()
             .withPlaceholder("Filter by name...");
@@ -51,7 +48,9 @@ public class MainView extends VVerticalLayout {
                         .get().setEntity(new SportEvent());
             });
 
-    private MapLibre map = new MapLibre(MAPTILER_STREETS);
+    // Note, the base map here and in editors could be defined
+    // here, but are instead defined application globally in ServiceInitListener
+    private MapLibre map = new MapLibre();
 
     public MainView(SportEventService service) {
         this.service = service;

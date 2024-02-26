@@ -19,11 +19,8 @@ public class EventEditor extends AbstractForm<SportEvent> {
     private final SportEventService service;
     private TextField title = new VTextField("Title");
     private DatePicker date = new DatePicker("Date");
-    // TODO fix the constructor parameter to be "field like"
-    private PointField location = new PointField("Location")
-            .withStyleUrl(MainView.MAPTILER_STREETS);
-    private LineStringField route = new LineStringField("Route")
-            .withStyleUrl(MainView.MAPTILER_STREETS);
+    private PointField location = new PointField("Location");
+    private LineStringField route = new LineStringField("Route");
 
     public EventEditor(SportEventService service) {
         super(SportEvent.class);
