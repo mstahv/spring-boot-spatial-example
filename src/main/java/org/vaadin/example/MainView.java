@@ -49,7 +49,7 @@ public class MainView extends VVerticalLayout {
             });
 
     // Note, the base map here and in editors could be defined
-    // here, but are instead defined application globally in ServiceInitListener
+    // here, but are instead defined application wide in Application class
     private MapLibre map = new MapLibre();
 
     public MainView(SportEventService service) {
