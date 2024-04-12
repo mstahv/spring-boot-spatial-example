@@ -9,7 +9,7 @@ import org.vaadin.addons.maplibre.MapLibreBaseMapProvider;
  * This would be the main app for deployment artifact.
  * For deployment, you need to configure DB.
  * For local testing & development, use TestApp that
- * launches MySQL with TestContainers.
+ * launches PostGIS using TestContainers.
  */
 @SpringBootApplication
 public class Application {
