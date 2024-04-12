@@ -73,10 +73,7 @@ public class MainView extends VVerticalLayout {
                 }),
                 filter
         ));
-        withExpanded(map);
-        add(table);
-        map.setWidthFull();
-
+        withExpanded(map, table);
 
         filter.addValueChangeListener(e -> {
             loadEventsByNameFilter(e.getValue());

@@ -28,7 +28,6 @@ public class SportEventService {
 
             WKTReader wktReader = new WKTReader(new GeometryFactory(new PrecisionModel(), 4326));
 
-
             try {
                 SportEvent theEvent = new SportEvent();
                 theEvent.setTitle("Example event");

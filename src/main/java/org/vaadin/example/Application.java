@@ -1,6 +1,5 @@
 package org.vaadin.example;
 
-import com.vaadin.flow.server.VaadinServiceInitListener;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
@@ -19,12 +18,9 @@ public class Application {
         SpringApplication.run(Application.class, args);
     }
 
-    @Bean
-    VaadinServiceInitListener configureDefaultMapBackground() {
-        return event -> {
-            event.getSource().getContext().setAttribute(MapLibreBaseMapProvider.class, () -> {
-                return "https://api.maptiler.com/maps/streets/style.json?key=G5n7stvZjomhyaVYP0qU";
-            });
-        };
+    // Configure default base map
+    @Bean MapLibreBaseMapProvider baseMapProvider() {
+        return () -> "https://api.maptiler.com/maps/streets/style.json?key=G5n7stvZjomhyaVYP0qU";
     }
+
 }
