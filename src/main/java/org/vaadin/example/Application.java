@@ -20,6 +20,7 @@ public class Application {
 
     // Configure default base map
     @Bean MapLibreBaseMapProvider baseMapProvider() {
+        // NOTE, Create your own API key in maptiler! This is registered to work on localhost for the demo only
         return () -> "https://api.maptiler.com/maps/streets/style.json?key=G5n7stvZjomhyaVYP0qU";
     }
 
