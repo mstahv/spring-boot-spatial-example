@@ -9,7 +9,7 @@ This is a small example app that shows how one can use:
  * ~~The example also uses [QueryDSL](http://www.querydsl.com) spatial query as an example. QueryDSL contain excellent support for spatial types.~~ QueryDSL example replaced with plain JPQL(with Hibernate spatial extensions) as the latest version is not compatible with latest JTS/Hibernate. See https://github.com/querydsl/querydsl/issues/2404. If you want to see the example of QueryDSL usage in this setup, check out a bit older version of the example.
  * Relational database, like PostGis (default, Postgres + extentiosn), H2GIS or MySQL, which supports basic spatial types. The example automatically launches Docker image with PostGis for the demo using TestContainers, if run via TestApp class in src/test/java/org/vaadin/example. Not that Hibernate might need tiny adjustments for other databases.
  * [Vaadin](https://vaadin.com/) and [MapLibreGL }> add-on](https://vaadin.com/directory/component/maplibregl--add-on) to build the UI layer. MapLibre add-on is a Vaadin wrapper for [MapLibre GL JS](https://github.com/maplibre/maplibre-gl-js) slippy map widget and [mapbox-gl-draw](https://github.com/mapbox/mapbox-gl-draw). Its Vaadin field implementations which make it dead simple to edit [JTS](https://locationtech.github.io/jts/) data types directly from the JPA entities.
- * As base layer for maps, OpenStreetMap layer is used, but naturally any common background map can be used.
+ * As base layer for maps, crisp vector format [OpenStreetMap](https://www.openstreetmap.org/) data via [MapTiler](https://www.maptiler.com) is used, but naturally any common background map can be used.
 
 ...to build a full-stack web app handling spatial data efficiently.
 
