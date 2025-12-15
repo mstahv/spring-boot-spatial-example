@@ -6,6 +6,7 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.Route;
+import in.virit.color.NamedColor;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
 import org.vaadin.addons.maplibre.DrawControl;
@@ -55,14 +56,12 @@ public class MainView extends VVerticalLayout {
     public MainView(SportEventService service) {
         this.service = service;
         service.ensureTestData();
-
         var drawControl = new DrawControl(map);
         drawControl.addGeometryChangeListener(e -> {
             Polygon p = (Polygon) e.getGeom().getGeometryN(0);
             loadEventsWithinBounds(p);
             drawControl.clear();
         });
-
         add(new HorizontalLayout(
                 addNew,
                 new VButton("Draw area to list events", e -> {
@@ -155,7 +154,7 @@ public class MainView extends VVerticalLayout {
                 });
             }
             if(sportEvent.getRoute() != null) {
-                map.addLineLayer(sportEvent.getRoute(), new LinePaint("blue", 3.0));
+                map.addLineLayer(sportEvent.getRoute(), new LinePaint(NamedColor.BLUE, 3.0));
                 // TODO add click listener also for lines
             }
         }

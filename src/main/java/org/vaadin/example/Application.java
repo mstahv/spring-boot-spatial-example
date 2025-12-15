@@ -3,7 +3,7 @@ package org.vaadin.example;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
-import org.vaadin.addons.maplibre.MapLibreBaseMapProvider;
+import org.vaadin.addons.maplibre.BaseMapConfigurer;
 
 /**
  * This would be the main app for deployment artifact.
@@ -19,9 +19,13 @@ public class Application {
     }
 
     // Configure default base map
-    @Bean MapLibreBaseMapProvider baseMapProvider() {
-        // NOTE, Create your own API key in maptiler! This is registered to work on localhost for the demo only
-        return () -> "https://api.maptiler.com/maps/streets/style.json?key=G5n7stvZjomhyaVYP0qU";
+    @Bean
+    BaseMapConfigurer baseMapProvider() {
+
+        return map -> {
+            // NOTE, Create your own API key in maptiler! This is registered to work on localhost for the demo only
+            map.initStyle("https://api.maptiler.com/maps/streets/style.json?key=qOkO4acoDsrtuvKp9BxP");
+        };
     }
 
 }
