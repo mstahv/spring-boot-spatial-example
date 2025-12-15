@@ -2,6 +2,22 @@
 
 ![Alt text](./screenshot.png?raw=true "Screenshot")
 
+## How To run?
+
+Make sure you have Docker installed and running (needed to create test DB) and a modern Java IDE that supports at least JDK 21. (see older versions of the example if you are tied to some legacy versions).
+
+Even if you don't want to run it, you probably want to first import the code to your favourite Java IDE (tested in IntelliJ last time) for easier exploring of the demo code. Then locate the TestApp class, and it's main method (src/main/test), run it! This will:
+
+ * Use Docker to get a postgres with postgis extensions
+ * Wire that to this Spring Boot app for development
+ * Run the Vaadin UI in development mode
+
+Alternatively, if you have Maven installed, run from CLI:
+
+    mvn spring-boot:test-run
+
+## What it showcases
+
 This is a small example app that shows how one can use:
 
  * [Spring Boot](http://projects.spring.io/spring-boot/) and [Spring Data](https://spring.io/projects/spring-data)
