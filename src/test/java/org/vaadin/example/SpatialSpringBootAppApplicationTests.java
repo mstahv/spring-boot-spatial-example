@@ -1,16 +1,16 @@
 package org.vaadin.example;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.junit4.SpringRunner;
 
-@RunWith(SpringRunner.class)
+@Import(DatabaseTestContainerConfiguration.class)
 @SpringBootTest
-public class SpatialSpringBootAppApplicationTests {
+class DemoApplicationTests {
 
-	@Test
-	public void contextLoads() {
-	}
+    @Test
+    void contextLoads() {
+    }
 
 }

@@ -24,7 +24,7 @@ public class Application {
 
         return map -> {
             // NOTE, Create your own API key in maptiler! This is registered to work on localhost for the demo only
-            map.initStyle("https://api.maptiler.com/maps/streets/style.json?key=qOkO4acoDsrtuvKp9BxP");
+            map.initStyle("https://api.maptiler.com/maps/streets/style.json?key=G5n7stvZjomhyaVYP0qU");
         };
     }
 
